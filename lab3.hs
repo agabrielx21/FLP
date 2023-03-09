@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use <$>" #-}
 
 import Control.Applicative
 import Data.Char
@@ -49,3 +51,25 @@ cifraSemn = do
     s <- satisfy (\c -> c `elem` ['+','-'])
     d <- digit
     return (digitToInt d * (if s == '-' then -1 else 1))    
+
+convert :: Char -> Int -> Int
+convert '+' d = d
+convert '-' d = -d
+
+cifraSemn' :: Parser Int
+cifraSemn' = pure convert <*> satisfy (\x -> x `elem` ['+','-']) <*> (digitToInt <$> digit)
+
+string :: String -> Parser String
+string [] = return []
+string (x:xs) = do
+    char x
+    string xs
+    return (x:xs)
+    
+-- apply (string "Ma") "Marire"
+-- 
+-- cazul general -->
+-- string(x:xs) = pure (:) <*> char x <*> string xs
+
+--Tema : restul exercitiilor din document
+

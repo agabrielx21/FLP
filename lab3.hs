@@ -1,8 +1,7 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use <$>" #-}
-
 import Control.Applicative
 import Data.Char
+import Distribution.Compat.CharParsing (space)
+import Control.Monad (void)
 
 instance Functor Parser where
     fmap f pa = Parser (\input -> [(f a, rest) | (a, rest) <- apply pa input])
@@ -72,4 +71,115 @@ string (x:xs) = do
 -- string(x:xs) = pure (:) <*> char x <*> string xs
 
 --Tema : restul exercitiilor din document
+---TEMA : 
 
+instance Alternative Parser where
+    empty = Parser (const [])
+    p <|> p' = Parser (\input -> apply p input ++ apply p' input)
+
+-- | Zero or more.
+-- many :: Alternative f => f a -> f [a]
+-- many v = some_v <|> pure []
+
+-- | One or more.
+-- some :: Alternative f => f a -> f [a]
+-- some v = pure (:) <*> v <*> many v
+
+naiveNatural :: Parser Int
+naiveNatural = do
+    digits <- some digit
+    return (read digits)
+
+whiteSpace :: Parser ()
+whiteSpace = do
+    many (satisfy isSpace)
+    return ()
+
+-- apply whiteSpace " \t\nksdw"
+-- [((),"ksdw"),((),"\nksdw"),((),"\t\nksdw"),(()," \t\nksdw")]
+-- apply whiteSpace "ionel"
+-- [(), "ionel]
+
+nat :: Parser Int 
+nat = do
+    digits <- some digit
+    return (read digits)
+
+-- apply nat "12ab"
+-- [(12, "ab"), (1, "2ab")]
+-- ghci> apply nat "ionel"
+-- []
+
+lexeme :: Parser a -> Parser a
+lexeme = (<* whiteSpace)
+
+-- apply (lexeme (string "Hello")) "Hello World!"
+-- [("Hello","World!"),("Hello"," World!"),("Hello"," World!")]
+
+-- | parses a natural number and skips the space after it
+natural :: Parser Int
+natural = lexeme nat     
+
+symbol :: String -> Parser String
+symbol =    lexeme . string
+
+-- apply (symbol "if") "if (x) ..."
+-- [("if","(x) ..."),("if"," (x) ...")]
+
+reserved :: String -> Parser ()
+reserved = void . symbol
+-- apply (reserved "if") "if (x) ..."
+-- [((),"(x) ..."),(()," (x) ...")] 
+
+comma :: Parser ()
+comma = reserved ","
+
+-- apply comma " ,"
+
+parens :: Parser a -> Parser a
+parens p = do
+    symbol "("
+    x <- p
+    symbol ")"
+    return x 
+
+-- apply (parens (string "Hello")) "(Hello)"
+
+brackets :: Parser a -> Parser a
+brackets p = do
+  char '[' 
+  whiteSpace
+  x <- p
+  whiteSpace
+  char ']'
+  return x
+
+-- apply (brackets (string "Hello")) "[ Hello ]"
+
+commaSep1 :: Parser a -> Parser [a]
+commaSep1 p = do
+  x <- p
+  xs <- many (comma >> p)
+  return (x:xs)
+
+-- apply (commaSep1 natural) "3 , 4 , a, 5"
+-- [([3,4],", a, 5"),([3,4]," , a, 5"),([3,4]," , a, 5"),([3],", 4 ,
+-- a, 5"),([3]," , 4 , a, 5"),([3]," , 4 , a, 5")]
+
+commaSep :: Parser a -> Parser [a]
+commaSep p = do
+  x <- commaSep1 p <|> pure []
+  return x
+
+ident :: Parser Char -> Parser Char -> Parser String
+ident identStart identLetter = do
+  start <- lexeme identStart
+  rest <- many $ lexeme identLetter
+  return (start : rest)
+
+identifier :: Parser Char -> Parser Char -> Parser String
+identifier start letter = lexeme (ident start letter)
+
+-- apply (identifier (satisfy isAlpha) (satisfy isAlphaNum)) "ij1
+-- + 3"
+-- [("ij1","+ 3"),("ij1"," + 3"),("ij","1 + 3"),("i","j1 + 3")]

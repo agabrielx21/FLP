@@ -121,7 +121,7 @@ natural :: Parser Int
 natural = lexeme nat     
 
 symbol :: String -> Parser String
-symbol =    lexeme . string
+symbol = lexeme . string
 
 -- apply (symbol "if") "if (x) ..."
 -- [("if","(x) ..."),("if"," (x) ...")]

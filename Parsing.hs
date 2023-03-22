@@ -1,4 +1,3 @@
-
 module Parsing where
 
 import Exp
@@ -106,4 +105,3 @@ exprParser :: Parser ComplexExp
 exprParser = whiteSpace *> expr <* endOfInput
 -- >>> parseFirst exprParser "let x := 28 in \\y -> + x y"
 -- Just (Let (Var {getVar = "x"}) (Nat 28) (CLam (Var {getVar = "y"}) (CApp (CApp (CX (Var {getVar = "+"})) (CX (Var {getVar = "x"}))) (CX (Var {getVar = "y"})))))
-

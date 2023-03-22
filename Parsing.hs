@@ -1,5 +1,4 @@
 module Parsing where
-
 import Exp
 import Lab2
 import Control.Applicative (some, many, (<|>))

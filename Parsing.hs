@@ -55,12 +55,12 @@ letExp = do
 letrecExp :: Parser ComplexExp
 letrecExp = do 
   symbol "letrec"
-  x <- var
+  a <- var
   symbol ":="
   e1 <- expr
   symbol "in"
   e2 <- expr
-  return $ LetRec x e1 e2
+  return $ LetRec a e1 e2
 -- >>> parseFirst letrecExp "letrec x := y in z"
 -- Just (LetRec (Var {getVar = "x"}) (CX (Var {getVar = "y"})) (CX (Var {getVar = "z"})))
 

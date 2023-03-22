@@ -19,7 +19,7 @@ haskellId = identifier (satisfy isAlpha) (satisfy isAlphaNum)
 haskellOp :: Parser String
 haskellOp = identifier isOp isOp
   where
-    isOp c = satisfy (\x -> elem x "~!@#%^&:?|<>+=-_")
+    isOp = satisfy (\x -> elem x "~!@#%^&:?|<>+=-_")
 
 
 var :: Parser Var
@@ -62,27 +62,38 @@ letrecExp = do
   e1 <- expr
   symbol "in"
   e2 <- expr
-  return $ Letrec x e1 e2
+  return $ LetRec x e1 e2
 -- >>> parseFirst letrecExp "letrec x := y in z"
 -- Just (LetRec (Var {getVar = "x"}) (CX (Var {getVar = "y"})) (CX (Var {getVar = "z"})))
 
 listExp :: Parser ComplexExp
-listExp = undefined
+listExp = do
+    symbol "["
+    es <- many expr
+    symbol "]"
+    return $ List es
 -- >>> parseFirst listExp "[a,b,c]"
 -- Just (List [CX (Var {getVar = "a"}),CX (Var {getVar = "b"}),CX (Var {getVar = "c"})])
 
 natExp :: Parser ComplexExp
-natExp = undefined
+natExp = Nat . fromIntegral <$> natural 
+
 -- >>> parseFirst natExp "223 a"
 -- Just (Nat 223)
 
 parenExp :: Parser ComplexExp
-parenExp = undefined
+parenExp = do
+    symbol "("
+    x <- var
+    symbol ")"
+    return $ CX x
 -- >>> parseFirst parenExp "(a)"
 -- Just (CX (Var {getVar = "a"}))
 
 basicExp :: Parser ComplexExp
-basicExp = undefined
+basicExp = do
+  x <- varExp <|> lambdaExp <|> letExp <|> letrecExp <|> listExp <|> natExp <|> parenExp
+  return x
 -- >>> parseFirst basicExp "[a,b,c]"
 -- Just (List [CX (Var {getVar = "a"}),CX (Var {getVar = "b"}),CX (Var {getVar = "c"})])
 

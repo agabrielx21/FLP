@@ -45,12 +45,12 @@ lambdaExp = do
 letExp :: Parser ComplexExp
 letExp = do
   symbol "let"
-  x <- var
+  a <- var
   symbol ":="
   e1 <- expr
   symbol "in"
   e2 <- expr
-  return $ Let x e1 e2
+  return $ Let a e1 e2
 -- >>> parseFirst letExp "let x := y in z"
 -- Just (Let (Var {getVar = "x"}) (CX (Var {getVar = "y"})) (CX (Var {getVar = "z"})))
 
@@ -69,9 +69,9 @@ letrecExp = do
 listExp :: Parser ComplexExp
 listExp = do
     symbol "["
-    es <- many expr
+    e <- many expr
     symbol "]"
-    return $ List es
+    return $ List e
 -- >>> parseFirst listExp "[a,b,c]"
 -- Just (List [CX (Var {getVar = "a"}),CX (Var {getVar = "b"}),CX (Var {getVar = "c"})])
 
@@ -84,16 +84,16 @@ natExp = Nat . fromIntegral <$> natural
 parenExp :: Parser ComplexExp
 parenExp = do
     symbol "("
-    x <- var
+    a <- var
     symbol ")"
-    return $ CX x
+    return $ CX a
 -- >>> parseFirst parenExp "(a)"
 -- Just (CX (Var {getVar = "a"}))
 
 basicExp :: Parser ComplexExp
 basicExp = do
-  x <- varExp <|> lambdaExp <|> letExp <|> letrecExp <|> listExp <|> natExp <|> parenExp
-  return x
+  a <- varExp <|> lambdaExp <|> letExp <|> letrecExp <|> listExp <|> natExp <|> parenExp
+  return a
 -- >>> parseFirst basicExp "[a,b,c]"
 -- Just (List [CX (Var {getVar = "a"}),CX (Var {getVar = "b"}),CX (Var {getVar = "c"})])
 

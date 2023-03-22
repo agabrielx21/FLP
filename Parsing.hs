@@ -1,4 +1,5 @@
 module Parsing where
+  
 import Exp
 import Lab2
 import Control.Applicative (some, many, (<|>))
@@ -43,24 +44,24 @@ lambdaExp = do
 letExp :: Parser ComplexExp
 letExp = do
   symbol "let"
-  a <- var
+  x <- var
   symbol ":="
   e1 <- expr
   symbol "in"
   e2 <- expr
-  return $ Let a e1 e2
+  return $ Let x e1 e2
 -- >>> parseFirst letExp "let x := y in z"
 -- Just (Let (Var {getVar = "x"}) (CX (Var {getVar = "y"})) (CX (Var {getVar = "z"})))
 
 letrecExp :: Parser ComplexExp
 letrecExp = do 
   symbol "letrec"
-  a <- var
+  x <- var
   symbol ":="
   e1 <- expr
   symbol "in"
   e2 <- expr
-  return $ LetRec a e1 e2
+  return $ LetRec x e1 e2
 -- >>> parseFirst letrecExp "letrec x := y in z"
 -- Just (LetRec (Var {getVar = "x"}) (CX (Var {getVar = "y"})) (CX (Var {getVar = "z"})))
 
